@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>imgs/tick-mark.png</file>
+    <file>ag-square.png</file>
+  </qresource>
+  <qresource prefix="newPrefix">
+    <file>asfalt-dark.png</file>
+  </qresource>
+</RCC>
