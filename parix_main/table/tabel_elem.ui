@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>365</width>
+    <height>51</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color:none;background:none;</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">background-color:none;background:none;</string>
+   </property>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>365</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-radius: 10px;
+background-color: white;</string>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>244</x>
+       <y>8</y>
+       <width>35</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Cancel</string>
+     </property>
+     <property name="statusTip">
+      <string>Cancel</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: none;
+background-color: rgb(226, 226, 255);
+border-radius: 10px;
+</string>
+     </property>
+     <property name="text">
+      <string>✖️</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>284</x>
+       <y>8</y>
+       <width>35</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Edit</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: none;
+background-color: rgb(226, 226, 255);
+border-radius: 10px;
+</string>
+     </property>
+     <property name="text">
+      <string>🖊</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_3">
+     <property name="geometry">
+      <rect>
+       <x>324</x>
+       <y>8</y>
+       <width>35</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>Archive</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: none;
+background-color: rgb(226, 226, 255);
+border-radius: 10px;
+</string>
+     </property>
+     <property name="text">
+      <string>→</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>3</x>
+       <y>3</y>
+       <width>84</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 650 14pt &quot;Segoe UI&quot;;
+color: rgb(40, 40, 40);
+border-radius: 10px;
+background-color: rgb(226, 226, 255);</string>
+     </property>
+     <property name="text">
+      <string>18:30</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>3</x>
+       <y>33</y>
+       <width>84</width>
+       <height>14</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+       <italic>false</italic>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: none;
+background-color: none;
+color: rgb(100, 100, 100);
+font: 9pt &quot;Arial&quot;;</string>
+     </property>
+     <property name="text">
+      <string>22 Jan</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>3</x>
+       <y>19</y>
+       <width>84</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 700 14pt &quot;Segoe UI&quot;;
+color: rgb(35, 35, 35);
+border-radius: 10px;
+background-color: rgba(255, 57, 57, 60);</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>4</y>
+       <width>151</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 550 12pt &quot;Gadugi&quot;;</string>
+     </property>
+     <property name="text">
+      <string>Firstname Surname</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>92</x>
+       <y>27</y>
+       <width>91</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 600 10pt &quot;Gadugi&quot;;
+background: none;</string>
+     </property>
+     <property name="text">
+      <string>Master's name</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>178</x>
+       <y>27</y>
+       <width>73</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 600 10pt &quot;Gadugi&quot;;
+background: none;</string>
+     </property>
+     <property name="text">
+      <string>Service</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>395</x>
+       <y>0</y>
+       <width>49</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>365</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: white;</string>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <widget class="QComboBox" name="comboBox">
+      <property name="geometry">
+       <rect>
+        <x>98</x>
+        <y>27</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+      <property name="placeholderText">
+       <string>Master</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit">
+      <property name="geometry">
+       <rect>
+        <x>94</x>
+        <y>4</y>
+        <width>90</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string>Firstname</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_2">
+      <property name="geometry">
+       <rect>
+        <x>195</x>
+        <y>27</y>
+        <width>73</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>Service</string>
+      </property>
+     </widget>
+     <widget class="QTimeEdit" name="timeEdit">
+      <property name="geometry">
+       <rect>
+        <x>3</x>
+        <y>3</y>
+        <width>84</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 650 14pt &quot;Segoe UI&quot;;
+color: rgb(40, 40, 40);
+border-radius: 10px;
+background-color: rgb(226, 226, 255);</string>
+      </property>
+      <property name="displayFormat">
+       <string>HH:mm</string>
+      </property>
+      <property name="time">
+       <time>
+        <hour>12</hour>
+        <minute>0</minute>
+        <second>0</second>
+       </time>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="geometry">
+       <rect>
+        <x>324</x>
+        <y>8</y>
+        <width>35</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Save</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: none;
+background-color: rgb(226, 226, 255);
+border-radius: 10px;
+</string>
+      </property>
+      <property name="text">
+       <string>✔️</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_5">
+      <property name="geometry">
+       <rect>
+        <x>284</x>
+        <y>8</y>
+        <width>35</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Back</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: none;
+background-color: rgb(226, 226, 255);
+border-radius: 10px;
+</string>
+      </property>
+      <property name="text">
+       <string>←</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>3</x>
+        <y>19</y>
+        <width>84</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 700 14pt &quot;Segoe UI&quot;;
+color: rgb(35, 35, 35);
+border-radius: 10px;
+background-color: rgba(255, 57, 57, 60);</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>3</x>
+        <y>33</y>
+        <width>84</width>
+        <height>14</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>9</pointsize>
+        <italic>false</italic>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: none;
+background-color: none;
+color: rgb(100, 100, 100);
+font: 9pt &quot;Arial&quot;;</string>
+      </property>
+      <property name="text">
+       <string>22 Jan</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_2">
+      <property name="geometry">
+       <rect>
+        <x>187</x>
+        <y>4</y>
+        <width>90</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="placeholderText">
+       <string>Surname</string>
+      </property>
+     </widget>
+     <zorder>label_8</zorder>
+     <zorder>comboBox</zorder>
+     <zorder>lineEdit</zorder>
+     <zorder>comboBox_2</zorder>
+     <zorder>timeEdit</zorder>
+     <zorder>pushButton_4</zorder>
+     <zorder>pushButton_5</zorder>
+     <zorder>label_9</zorder>
+     <zorder>lineEdit_2</zorder>
+    </widget>
+    <zorder>label_3</zorder>
+    <zorder>pushButton</zorder>
+    <zorder>pushButton_2</zorder>
+    <zorder>pushButton_3</zorder>
+    <zorder>label</zorder>
+    <zorder>label_2</zorder>
+    <zorder>label_4</zorder>
+    <zorder>label_5</zorder>
+    <zorder>label_6</zorder>
+    <zorder>label_7</zorder>
+    <zorder>groupBox</zorder>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
