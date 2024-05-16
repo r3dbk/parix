@@ -3,14 +3,14 @@ import sqlite3
 import sys
 import tkinter as tk
 from tkinter import messagebox as mb
+from windows_toasts import Toast, WindowsToaster
 
 from PyQt6 import uic, QtCore, QtWidgets
-from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QRect, QDate
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QGridLayout
 
-from custom_calendar import calendar_widget
-
-calendar = calendar_widget.MainCalendar
+from custom_calendar.calendar_widget import MainCalendar
+from table.table_elem import TableElement
 
 root = tk.Tk()
 root.withdraw()
@@ -21,6 +21,7 @@ cur = conn.cursor()
 
 cur.execute("""CREATE TABLE IF NOT EXISTS appointments_db(
     appointment_id TEXT,
+    status TEXT,
     firstname TEXT,
     surname TEXT,
     time TEXT,
@@ -61,21 +62,45 @@ cur.execute("""CREATE TABLE IF NOT EXISTS services_db(
 conn.commit()
 
 
+# toaster = WindowsToaster('Python')
+# newToast = Toast()
+# newToast.text_fields = ['Hello, world!']
+# newToast.on_activated = lambda _: print('Toast clicked!')
+# toaster.show_toast(newToast)
+
 class MyWidget(QMainWindow):
     def __init__(self):
         super().__init__()
 
         uic.loadUi('parix.ui', self)
-        self.layout = QGridLayout()
+        self.main_menu_layout = QGridLayout()
+        self.tab_layout = QGridLayout()
 
-        self.frame.setLayout(self.layout)
-        self.layout.addWidget(calendar, 0, 0, 0, 0)
+        self.tab_layout.setSpacing(0)
+        self.tab_layout.setVerticalSpacing(0)
 
-        # MainCalendar.setGeometry(QRect(0, 0, 260, 295))
+        self.main_menu_layout.setContentsMargins(0, 0, 0, 0)
+        self.tab_layout.setContentsMargins(10, 10, 0, 0)
 
+        self.frame.setLayout(self.main_menu_layout)
+        self.tab_5.setLayout(self.tab_layout)
+
+        self.calendar = MainCalendar()
+        self.calendar.setGeometry(QRect(0, 0, 260, 295))
+
+        self.dict_elem = {}
+        self.app_status_dict = {0: 'Active', 1: 'Archived', 2: 'Cancelled'}
+
+        # returns [day(1-31), month(1-12), year(2024)]
+
+        self.main_menu_layout.addWidget(self.calendar, 0, 0)
+        self.main_menu_layout.addWidget(self.tabWidget_2, 0, 1)
 
         self.now = QtCore.QTime.fromString('18:00', 'HH:MM')
         self.date = QtCore.QDate.currentDate()
+
+        self.selected_date = ''
+        self.selected_date_2 = ''
 
         # --------------DELETE WHEN FINISHED---------RETURN FRAME_4 Y-AXIS TO 0!!!---
         self.lineEdit_3.setText('admin')
@@ -118,15 +143,18 @@ class MyWidget(QMainWindow):
 
         # Resizing columns
         self.tableWidget.setColumnWidth(0, 20)
-        self.tableWidget.setColumnWidth(1, 120)
+        self.tableWidget.setColumnWidth(1, 65)
         self.tableWidget.setColumnWidth(2, 120)
-        self.tableWidget.setColumnWidth(3, 60)
-        self.tableWidget.setColumnWidth(4, 75)
-        self.tableWidget.setColumnWidth(5, 80)
+        self.tableWidget.setColumnWidth(3, 120)
+        self.tableWidget.setColumnWidth(4, 45)
+        self.tableWidget.setColumnWidth(5, 55)
         self.tableWidget.setColumnWidth(6, 80)
-        self.tableWidget.setColumnWidth(7, 50)
-        self.tableWidget.setColumnWidth(8, 70)
-        self.tableWidget.setColumnWidth(9, 90)
+        self.tableWidget.setColumnWidth(7, 80)
+        self.tableWidget.setColumnWidth(8, 40)
+        self.tableWidget.setColumnWidth(9, 50)
+        self.tableWidget.setColumnWidth(10, 90)
+
+        self.tableWidget_2.setColumnWidth(3, 250)
 
         self.frame_5.hide()
         self.frame_7.hide()
@@ -135,6 +163,67 @@ class MyWidget(QMainWindow):
         self.frame_11.hide()
         self.frame_12.hide()
 
+    def update_tab_app(self, elem):
+        ap_id = self.dict_elem[elem][0]
+
+        appoint = (elem.lineEdit.text(),
+                   elem.lineEdit_2.text(), str(elem.timeEdit.time().toPyTime()),
+                   self.calendar.current_date,
+                   elem.comboBox.currentText(), elem.comboBox_2.currentText(),
+                   ap_id)
+
+        elem.groupBox.hide()
+
+        cur.execute(
+            '''UPDATE appointments_db SET firstname = ?, surname = ?, time = ?, date = ?, master_id = ?,
+             service_id = ? WHERE appointment_id = ?''', appoint)
+        conn.commit()
+
+        self.render_list()
+        self.back_app()
+
+    def cancel_tab_app(self, app_elem):
+        app_id = self.dict_elem[app_elem][0]
+
+        cur.execute("UPDATE appointments_db SET status = ? WHERE appointment_id = ?;", ('2', app_id))
+        conn.commit()
+
+        app_elem.groupBox.hide()
+        self.render_list()
+
+    def archive_tab_app(self, app_elem):
+        app_id = self.dict_elem[app_elem][0]
+
+        cur.execute("UPDATE appointments_db SET status = ? WHERE appointment_id = ?;", ('1', app_id))
+        conn.commit()
+
+        app_elem.groupBox.hide()
+        self.render_list()
+
+    def render_tab_services(self, app_elem):
+        current_service = self.dict_elem[app_elem][7]
+        app_master_id = app_elem.comboBox.currentIndex()
+
+        # redo masters_db, masters id shouldn't be equal to index
+        master = cur.execute("SELECT * FROM master_db WHERE master_id = ?;",
+                             str(app_master_id, )).fetchall()[0]
+        services_db = cur.execute("SELECT * FROM services_db;").fetchall()
+
+        service_array = []
+        services = ''
+
+        for i in master[3]:
+            if i not in services:
+                services += i
+
+        for service in services_db:
+            if service[0] in services:
+                service_array.append(service[1])
+
+        app_elem.comboBox_2.clear()
+        app_elem.comboBox_2.addItems(service_array)
+        app_elem.comboBox_2.setCurrentText(current_service)
+
     def show_app(self):
         self.frame_2.hide()
         self.frame_5.hide()
@@ -142,24 +231,24 @@ class MyWidget(QMainWindow):
 
         print(str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Showing appointment')
 
-        one_ges = cur.execute("SELECT * FROM appointments_db;").fetchall()
+        appointments_db = cur.execute("SELECT * FROM appointments_db;").fetchall()
 
-        sec_ges = cur.execute("SELECT * FROM services_db;").fetchall()
+        services_db = cur.execute("SELECT * FROM services_db;").fetchall()
 
-        masters = cur.execute("SELECT * FROM master_db;").fetchall()
+        masters_db = cur.execute("SELECT * FROM master_db;").fetchall()
 
         combo_elements = {}
 
-        for master in masters:
+        for master in masters_db:
             combo_elements[str(master[1] + ' ' + master[2])] = master[0]
 
         service_array = []
         something = ''
 
-        for master in masters:
+        for master in masters_db:
             something += str(master[3])
 
-        for service in sec_ges:
+        for service in services_db:
             if service[0] in something:
                 service_array.append(service[1])
 
@@ -172,7 +261,7 @@ class MyWidget(QMainWindow):
         self.comboBox_2.setCurrentText('')
 
         try:
-            ids = int(one_ges[-1][0]) + 1
+            ids = int(appointments_db[-1][0]) + 1
         except:
             ids = 0
 
@@ -184,14 +273,12 @@ class MyWidget(QMainWindow):
         print(str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'admin_id is: ' + str(adm_id))
 
         app_id = self.label_24.text()
-        print('test')
-        appoint = (str(app_id), self.lineEdit_8.text(),
+        appoint = (str(app_id), str(self.comboBox_5.currentIndex()), self.lineEdit_8.text(),
                    self.lineEdit_9.text(), str(self.timeEdit_3.time().toPyTime()),
                    str(self.calendarWidget.selectedDate().toPyDate()),
                    self.comboBox.currentText(), self.comboBox_2.currentText(), str(adm_id),
                    datetime.datetime.now().strftime('%d-%m-%y'), self.textEdit_2.toPlainText(),)
-        print(appoint)
-        cur.execute("INSERT INTO appointments_db VALUES(?,?,?,?,?,?,?,?,?,?);", appoint)
+        cur.execute("INSERT INTO appointments_db VALUES(?,?,?,?,?,?,?,?,?,?,?);", appoint)
         conn.commit()
         self.clear_app()
         self.render_list()
@@ -222,15 +309,16 @@ class MyWidget(QMainWindow):
             self.frame_5.show()
             self.frame_10.hide()
 
+            ap_id = self.tableWidget.currentItem().text()
+
+            appointment_elem = \
+            cur.execute("SELECT * FROM appointments_db WHERE appointment_id = ?", (str(ap_id),)).fetchall()[0]
+            services_db = cur.execute("SELECT * FROM services_db;").fetchall()
+            masters = cur.execute("SELECT * FROM master_db;").fetchall()
+
             service_array = []
             something = ''
             combo_elements = {}
-
-            ap_id = self.tableWidget.currentItem().text()
-
-            one_ges = cur.execute("SELECT * FROM appointments_db WHERE appointment_id = ?", (str(ap_id),)).fetchall()[0]
-            sec_ges = cur.execute("SELECT * FROM services_db;").fetchall()
-            masters = cur.execute("SELECT * FROM master_db;").fetchall()
 
             for master in masters:
                 combo_elements[str(master[1] + ' ' + master[2])] = master[0]
@@ -238,33 +326,29 @@ class MyWidget(QMainWindow):
                     if i not in something:
                         something += i
 
-            for service in sec_ges:
-                print(service)
+            for service in services_db:
                 if service[0] in something:
-                    service_array.append(sec_ges[1])
-
-            print(service_array, something)
+                    service_array.append(service[1])
 
             self.comboBox_3.addItems(service_array)
             self.comboBox_3.setCurrentText('')
 
             self.comboBox_4.addItems(combo_elements)
-            self.comboBox_4.model().item(0).setEnabled(False)
             self.comboBox_4.setCurrentText('')
 
+            self.comboBox_6.setCurrentIndex(int(appointment_elem[1]))
+
             self.label_10.setText(self.selected_date_2)
+            self.label_17.setText(appointment_elem[0])
 
-            self.lineEdit_6.clear()
-            self.lineEdit_6.setText(str(one_ges[2]))
-
-            self.lineEdit_7.clear()
-            self.lineEdit_7.setText(str(one_ges[1]))
+            self.lineEdit_6.setText(str(appointment_elem[3]))
+            self.lineEdit_7.setText(str(appointment_elem[2]))
 
             self.timeEdit_2.setTime(
-                QtCore.QTime(int(datetime.datetime.strptime(str(one_ges[3]), "%H:%M:%S").strftime("%H")),
-                             int(datetime.datetime.strptime(str(one_ges[3]), "%H:%M:%S").strftime("%M"))))
+                QtCore.QTime(int(datetime.datetime.strptime(str(appointment_elem[4]), "%H:%M:%S").strftime("%H")),
+                             int(datetime.datetime.strptime(str(appointment_elem[4]), "%H:%M:%S").strftime("%M"))))
 
-            self.textEdit.setPlainText(one_ges[9])
+            self.textEdit.setPlainText(appointment_elem[10])
 
         else:
             mb.showinfo('Select id', 'To edit an appointment select its id')
@@ -275,14 +359,14 @@ class MyWidget(QMainWindow):
         print(
             str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (ED) appoint id is: ' + str(ap_id))
 
-        appoint = (self.lineEdit_7.text(),
+        appoint = (str(self.comboBox_6.currentIndex()), self.lineEdit_7.text(),
                    self.lineEdit_6.text(), str(self.timeEdit_2.time().toPyTime()),
                    str(self.calendarWidget_2.selectedDate().toPyDate()),
                    self.comboBox_4.currentText(), self.comboBox_3.currentText(), self.textEdit.toPlainText(),
                    str(ap_id),)
 
         cur.execute(
-            '''UPDATE appointments_db SET firstname = ?, surname = ?, time = ?, date = ?, master_id = ?,
+            '''UPDATE appointments_db SET status = ?, firstname = ?, surname = ?, time = ?, date = ?, master_id = ?,
              service_id = ?, comment = ? WHERE appointment_id = ?''', appoint)
         conn.commit()
 
@@ -354,13 +438,13 @@ class MyWidget(QMainWindow):
 
         # --------RE-DO-----------
         if self.checkBox.isChecked():
-            services += '0'
-        if self.checkBox_2.isChecked():
             services += '1'
-        if self.checkBox_3.isChecked():
+        if self.checkBox_2.isChecked():
             services += '2'
-        if self.checkBox_4.isChecked():
+        if self.checkBox_3.isChecked():
             services += '3'
+        if self.checkBox_4.isChecked():
+            services += '4'
         # ---------RE-DO----------
 
         # for key, value in checkBox_list.items():
@@ -383,22 +467,22 @@ class MyWidget(QMainWindow):
             self.frame_7.hide()
             self.frame_6.hide()
 
-            mastr_id = self.tableWidget_2.currentItem().text()
+            master_key = self.tableWidget_2.currentItem().text()
 
-            one_ges = cur.execute("SELECT * FROM master_db WHERE master_id = ?", (str(mastr_id),)).fetchall()[0]
+            master_elem = cur.execute("SELECT * FROM master_db WHERE master_id = ?", (str(master_key),)).fetchall()[0]
 
-            self.lineEdit_12.setText(str(one_ges[1]))
-            self.lineEdit_13.setText(str(one_ges[2]))
-            self.label_38.setText(str(one_ges[0]))
+            self.lineEdit_12.setText(str(master_elem[1]))
+            self.lineEdit_13.setText(str(master_elem[2]))
+            self.label_38.setText(str(master_elem[0]))
 
-            for i in one_ges[3]:
-                if i == '0':
-                    self.checkBox_5.setChecked(True)
+            for i in master_elem[3]:
                 if i == '1':
-                    self.checkBox_6.setChecked(True)
+                    self.checkBox_5.setChecked(True)
                 if i == '2':
-                    self.checkBox_7.setChecked(True)
+                    self.checkBox_6.setChecked(True)
                 if i == '3':
+                    self.checkBox_7.setChecked(True)
+                if i == '4':
                     self.checkBox_8.setChecked(True)
         else:
             mb.showinfo('Select id', 'To edit master select their id')
@@ -410,13 +494,13 @@ class MyWidget(QMainWindow):
         services = ''
         # --------RE-DO-----------
         if self.checkBox_5.isChecked():
-            services += '0'
-        if self.checkBox_6.isChecked():
             services += '1'
-        if self.checkBox_7.isChecked():
+        if self.checkBox_6.isChecked():
             services += '2'
-        if self.checkBox_8.isChecked():
+        if self.checkBox_7.isChecked():
             services += '3'
+        if self.checkBox_8.isChecked():
+            services += '4'
         # ---------RE-DO----------
         master = (self.lineEdit_12.text(),
                   self.lineEdit_13.text(), services, ap_id)
@@ -463,28 +547,97 @@ class MyWidget(QMainWindow):
 
     def render_list(self):
         print(str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Render')
-        one_ges = cur.execute("SELECT * FROM appointments_db;").fetchall()
-        sec_ges = cur.execute("SELECT * FROM master_db;").fetchall()
-        third_ges = cur.execute("SELECT * FROM services_db;").fetchall()
-        self.tableWidget.setRowCount(len(one_ges))
-        self.tableWidget_2.setRowCount(len(sec_ges))
-        self.tableWidget_4.setRowCount(len(third_ges))
+
+        appointments_db = cur.execute("SELECT * FROM appointments_db;").fetchall()
+        masters_db = cur.execute("SELECT * FROM master_db;").fetchall()
+        services_db = cur.execute("SELECT * FROM services_db;").fetchall()
+
+        self.tableWidget.setRowCount(len(appointments_db))
+        self.tableWidget_2.setRowCount(len(masters_db))
+        self.tableWidget_4.setRowCount(len(services_db))
+
+        self.dict_elem = {}
+        for i in reversed(range(self.tab_layout.count())):
+            self.tab_layout.itemAt(i).widget().setParent(None)
+
+        current_tab_row = 0
+
+        if len(appointments_db) > 0:
+            # Rendering appointments on the main page
+            for app_2 in appointments_db:
+                if app_2[1] != '0':
+                    pass
+                else:
+                    app_elem = TableElement()
+                    self.dict_elem[app_elem] = app_2
+
+                    app_elem.pushButton.clicked.connect(lambda state, x=app_elem: self.cancel_tab_app(x))
+                    app_elem.pushButton_3.clicked.connect(lambda state, x=app_elem: self.archive_tab_app(x))
+                    app_elem.pushButton_4.clicked.connect(lambda state, x=app_elem: self.update_tab_app(x))
+
+                    app_elem.setGeometry(QRect(0, 0, 365, 51))
+                    app_elem.comboBox_2.currentTextChanged.connect(
+                        lambda state: app_elem.label_6.setText(app_elem.comboBox_2.currentText()))
+
+                    services_id = ''
+                    masters_name = {}
+
+                    for master in masters_db:
+                        masters_name[str(master[1] + ' ' + master[2])] = master[0]
+                        for i in master[3]:
+                            if i not in services_id:
+                                services_id += i
+
+                    app_elem.comboBox.clear()
+
+                    app_elem.comboBox.addItems(masters_name)
+
+                    app_elem.comboBox.setCurrentText(app_2[6])
+                    app_elem.comboBox_2.setCurrentText(app_2[7])
+
+                    app_elem.comboBox.currentTextChanged.connect(
+                        lambda state, tb_elem=app_elem: self.render_tab_services(tb_elem))
+                    self.render_tab_services(app_elem)
+
+                    app_elem.lineEdit.setText(app_2[2])
+                    app_elem.lineEdit_2.setText(app_2[3])
+
+                    app_elem.label.setText(datetime.datetime.strptime(app_2[4], '%H:%M:%S').strftime('%H:%M'))  # re-do
+                    app_elem.label_2.setText(
+                        datetime.datetime.strptime(app_2[5], '%Y-%m-%d').strftime('%d %B'))
+                    app_elem.label_4.setText(app_2[2] + ' ' + app_2[3])
+                    app_elem.label_9.setText(
+                        datetime.datetime.strptime(app_2[5], '%Y-%m-%d').strftime('%d %B'))
+
+                    app_elem.timeEdit.setTime(datetime.datetime.strptime(app_2[4], '%H:%M:%S').time())
+
+                    self.tab_layout.addWidget(app_elem, current_tab_row, 0)
+
+                    current_tab_row += 1
+
         row_count = 0
-        for obj in one_ges:
+        for obj in appointments_db:
             column_count = 0
             for elem in obj:
-                if column_count == 7:
+                if column_count == 8:
                     two_ges = cur.execute("SELECT * FROM admin_db WHERE admin_id = ?", (elem,)).fetchall()
                     self.tableWidget.setItem(row_count, column_count, QTableWidgetItem(two_ges[0][1]))
-                elif column_count == 4:
+                elif column_count == 5:
                     self.tableWidget.setItem(row_count, column_count, QTableWidgetItem(
                         str(datetime.datetime.strptime(elem, '%Y-%m-%d').strftime('%d %B'))))
+                elif column_count == 4:
+                    self.tableWidget.setItem(row_count, column_count, QTableWidgetItem(
+                        str(datetime.datetime.strptime(elem, '%H:%M:%S').strftime('%H:%M'))))
+                elif column_count == 1:
+                    app_status = self.app_status_dict[int(elem)]
+                    self.tableWidget.setItem(row_count, column_count, QTableWidgetItem(
+                        str(app_status)))
                 else:
                     self.tableWidget.setItem(row_count, column_count, QTableWidgetItem(str(elem)))
                 column_count += 1
             row_count += 1
         row_count_2 = 0
-        for obj_2 in sec_ges:
+        for obj_2 in masters_db:
             column_count_2 = 0
             for elem_2 in obj_2:
                 if column_count_2 == 3:
@@ -506,7 +659,7 @@ class MyWidget(QMainWindow):
                 column_count_2 += 1
             row_count_2 += 1
         row_count_3 = 0
-        for obj_3 in third_ges:
+        for obj_3 in services_db:
             column_count_3 = 0
             for elem_3 in obj_3:
                 self.tableWidget_4.setItem(row_count_3, column_count_3, QTableWidgetItem(str(elem_3)))
@@ -568,13 +721,13 @@ class MyWidget(QMainWindow):
             self.frame_11.hide()
             self.frame_9.hide()
 
-            mastr_id = self.tableWidget_4.currentItem().text()
-            print(mastr_id)
-            one_ges = cur.execute("SELECT * FROM services_db WHERE service_id = ?", (str(mastr_id),)).fetchall()[0]
+            master_key = self.tableWidget_4.currentItem().text()
+            service_elem = cur.execute("SELECT * FROM services_db WHERE service_id = ?",
+                                       (str(master_key),)).fetchall()[0]
 
-            self.lineEdit_16.setText(str(one_ges[1]))
-            self.lineEdit_17.setText(str(one_ges[2]))
-            self.label_45.setText(str(one_ges[0]))
+            self.lineEdit_16.setText(str(service_elem[1]))
+            self.lineEdit_17.setText(str(service_elem[2]))
+            self.label_45.setText(str(service_elem[0]))
         else:
             mb.showinfo('Select id', 'To edit service select their id')
 
@@ -588,7 +741,7 @@ class MyWidget(QMainWindow):
                   self.lineEdit_17.text(), ap_id)
 
         cur.execute(
-            "UPDATE master_db SET name = ?, context = ? WHERE service_id = ?;", master)
+            "UPDATE services_db SET name = ?, context = ? WHERE service_id = ?;", master)
         conn.commit()
 
         self.render_list()
@@ -610,17 +763,15 @@ class MyWidget(QMainWindow):
         print(str(self.selected_date_2))
 
 
+def exception_hook(exctype, value, traceback):
+    print(exctype, value, traceback)
+    sys.__excepthook__(exctype, value, traceback)
+    sys.exit(1)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyWidget()
     ex.show()
-    sys._excepthook = sys.excepthook
-
-
-    def exception_hook(exctype, value, traceback):
-        print(exctype, value, traceback)
-        sys._excepthook(exctype, value, traceback)
-        sys.exit(1)
-
-
+    sys.excepthook = exception_hook
     sys.exit(app.exec())

@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow
 class MainCalendar(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('calendar.ui', self)
+        uic.loadUi('./custom_calendar/calendar.ui', self)
+        # uic.loadUi('./calendar.ui', self)
 
         # Dictionary which contains buttons and their status
         # 0. day(1-31), 1. month(1-12), 2. year(23,24,25 etc.), 3. active(T/F), 4. weekday/weekend(T/F), 5. selected(T/F); for example [7, 03, 24, True, True, False]
@@ -85,16 +86,10 @@ class MainCalendar(QMainWindow):
         for tup in list(self.buttons.items()):
             btn = tup[0]
             if str(self.buttons[btn][0]) == str(datetime.datetime.now().day):
-                self.render_month()
-                btn.setStyleSheet("""
-                                    QPushButton {
-                                        border: 2px solid #ff4c4c;
-                                        border-radius: 0;
-                                        font-size: 10pt;
-                                        font-weight: 600;
-                                    }
-                                    """)
-                self.buttons[btn][5] = True
+                self.current_btn = btn
+                self.current_date = datetime.datetime(self.buttons[btn][2], self.buttons[btn][1],
+                                                      self.buttons[btn][0]).date()
+                self.day_selected(btn)
                 break
 
     def switch_month(self, direction):
@@ -257,6 +252,7 @@ class MainCalendar(QMainWindow):
     # for example [7, 3, 24, True, True, False]
 
     def day_selected(self, btn):
+
         current_month = self.comboBox.currentIndex() + 1
 
         for tup in list(self.buttons.items()):
@@ -288,7 +284,15 @@ class MainCalendar(QMainWindow):
                     """)
 
                     # Selected - true
-                    self.buttons[btn][5] = True
+                    if self.current_btn == btn:
+                        self.buttons[btn][5] = True
+                    else:
+                        self.buttons[self.current_btn][5] = False
+                        self.buttons[btn][5] = True
+                        self.current_btn = btn
+                        self.current_date = datetime.datetime(self.buttons[btn][2], self.buttons[btn][1],
+                                                              self.buttons[btn][0]).date()
+                        print(self.current_date)
 
                 # If btn is disabled (out of current month range)
                 else:
@@ -320,25 +324,31 @@ class MainCalendar(QMainWindow):
                                 u"border: 2px solid red;\nborder-radius: 0;\nfont-size:10pt;\nfont-weight:600;")
 
                             # Selected - true
-                            self.buttons[tup_2[0]][5] = True
+                            if self.current_btn == btn:
+                                self.buttons[btn][5] = True
+                            else:
+                                self.buttons[self.current_btn][5] = False
+                                self.buttons[btn][5] = True
+                                self.current_btn = btn
+                                self.current_date = datetime.datetime(self.buttons[btn][2], self.buttons[btn][1],
+                                                                      self.buttons[btn][0]).date()
                             break
 
-    # def paintEvent(self, event):
-    #     painter = QPainter(self)
-    #     painter.drawText(event.rect(), QtCore.Qt.AlignCenter, 'Calendar')
+    def return_current_day(self):
+        current_btn_info = self.buttons[self.current_btn]
+        print(datetime.datetime(current_btn_info[2], current_btn_info[1], current_btn_info[0]).date())
+        return datetime.datetime(current_btn_info[2], current_btn_info[1], current_btn_info[0]).date()
+
+
+def exception_hook(exctype, value, traceback):
+    print(exctype, value, traceback)
+    sys.__excepthook__(exctype, value, traceback)
+    sys.exit(1)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MainCalendar()
     ex.show()
-    sys._excepthook = sys.excepthook
-
-
-    def exception_hook(exctype, value, traceback):
-        print(exctype, value, traceback)
-        sys._excepthook(exctype, value, traceback)
-        sys.exit(1)
-
-
+    sys.excepthook = exception_hook
     sys.exit(app.exec())
