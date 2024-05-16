@@ -77,13 +77,12 @@ class MyWidget(QMainWindow):
         self.tab_layout = QGridLayout()
 
         self.tab_layout.setSpacing(0)
-        self.tab_layout.setVerticalSpacing(0)
 
         self.main_menu_layout.setContentsMargins(0, 0, 0, 0)
         self.tab_layout.setContentsMargins(10, 10, 0, 0)
 
         self.frame.setLayout(self.main_menu_layout)
-        self.tab_5.setLayout(self.tab_layout)
+        self.scrollArea.setLayout(self.tab_layout)
 
         self.calendar = MainCalendar()
         self.calendar.setGeometry(QRect(0, 0, 260, 295))
@@ -289,15 +288,17 @@ class MyWidget(QMainWindow):
 
     def delete_app(self):
         if self.tableWidget.currentColumn() == 0:
-            ap_id = self.tableWidget.currentItem().text()
-            print(
-                str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) appoint id is: ' + str(ap_id))
+            res = mb.askyesno(title='Confirm', message='Are you sure you want to delete this appointment?')
+            if res:
+                ap_id = self.tableWidget.currentItem().text()
+                print(
+                    str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) appoint id is: ' + str(ap_id))
 
-            cur.execute("DELETE FROM appointments_db WHERE appointment_id = ?", (str(ap_id),))
-            conn.commit()
+                cur.execute("DELETE FROM appointments_db WHERE appointment_id = ?", (str(ap_id),))
+                conn.commit()
 
-            self.render_list()
-            self.back_app()
+                self.render_list()
+                self.back_app()
         else:
             mb.showinfo('Select id', 'To delete an appointment select its id')
 
@@ -512,14 +513,16 @@ class MyWidget(QMainWindow):
 
     def delete_master(self):
         if self.tableWidget_2.currentRow() != -1:
-            ap_id = self.tableWidget_2.currentItem().text()
-            print(
-                str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) master id is: ' + str(
-                    ap_id))
-            cur.execute("DELETE FROM master_db WHERE master_id = ?", (str(ap_id),))
-            conn.commit()
-            self.render_list()
-            self.back_master()
+            res = mb.askyesno(title='Confirm', message='Are you sure you want to delete this master?')
+            if res:
+                ap_id = self.tableWidget_2.currentItem().text()
+                print(
+                    str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) master id is: ' + str(
+                        ap_id))
+                cur.execute("DELETE FROM master_db WHERE master_id = ?", (str(ap_id),))
+                conn.commit()
+                self.render_list()
+                self.back_master()
         else:
             mb.showinfo('Select id', 'To delete master from the database select its id')
 
@@ -612,6 +615,8 @@ class MyWidget(QMainWindow):
                     app_elem.timeEdit.setTime(datetime.datetime.strptime(app_2[4], '%H:%M:%S').time())
 
                     self.tab_layout.addWidget(app_elem, current_tab_row, 0)
+                    # self.tab_layout.setRowStretch(current_tab_row, 1)
+                    # self.tab_layout.setRowStretch(current_tab_row+1, 10-len(self.dict_elem))
 
                     current_tab_row += 1
 
@@ -668,14 +673,16 @@ class MyWidget(QMainWindow):
 
     def delete_serv(self):
         if self.tableWidget_4.currentRow() != -1:
-            ap_id = self.tableWidget_4.currentItem().text()
-            print(
-                str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) service id is: ' + str(
-                    ap_id))
-            cur.execute("DELETE FROM services_db WHERE service_id = ?", (str(ap_id),))
-            conn.commit()
-            self.render_list()
-            self.back_app()
+            res = mb.askyesno(title='Confirm', message='Are you sure you want to delete this service?')
+            if res:
+                ap_id = self.tableWidget_4.currentItem().text()
+                print(
+                    str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) service id is: ' + str(
+                        ap_id))
+                cur.execute("DELETE FROM services_db WHERE service_id = ?", (str(ap_id),))
+                conn.commit()
+                self.render_list()
+                self.back_app()
         else:
             mb.showinfo('Select id', 'To delete service from the database select its id')
 
