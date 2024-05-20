@@ -7,10 +7,12 @@ from windows_toasts import Toast, WindowsToaster
 
 from PyQt6 import uic, QtCore, QtWidgets
 from PyQt6.QtCore import QRect, QDate
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QGridLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QGridLayout, QVBoxLayout
 
 from custom_calendar.calendar_widget import MainCalendar
 from table.table_elem import TableElement
+
+# Объедени комбобоксы
 
 root = tk.Tk()
 root.withdraw()
@@ -76,13 +78,12 @@ class MyWidget(QMainWindow):
         self.main_menu_layout = QGridLayout()
         self.tab_layout = QGridLayout()
 
-        self.tab_layout.setSpacing(0)
-
         self.main_menu_layout.setContentsMargins(0, 0, 0, 0)
+        self.tab_layout.setSpacing(0)
         self.tab_layout.setContentsMargins(10, 10, 0, 0)
 
         self.frame.setLayout(self.main_menu_layout)
-        self.scrollArea.setLayout(self.tab_layout)
+        self.tab_5.setLayout(self.tab_layout)
 
         self.calendar = MainCalendar()
         self.calendar.setGeometry(QRect(0, 0, 260, 295))
@@ -140,6 +141,8 @@ class MyWidget(QMainWindow):
         self.pushButton_33.clicked.connect(self.back_serv)
         self.pushButton_34.clicked.connect(self.delete_master)
 
+        self.comboBox_list = []
+
         # Resizing columns
         self.tableWidget.setColumnWidth(0, 20)
         self.tableWidget.setColumnWidth(1, 65)
@@ -182,6 +185,7 @@ class MyWidget(QMainWindow):
         self.back_app()
 
     def cancel_tab_app(self, app_elem):
+        print(self.dict_elem)
         app_id = self.dict_elem[app_elem][0]
 
         cur.execute("UPDATE appointments_db SET status = ? WHERE appointment_id = ?;", ('2', app_id))
@@ -199,7 +203,7 @@ class MyWidget(QMainWindow):
         app_elem.groupBox.hide()
         self.render_list()
 
-    def render_tab_services(self, app_elem):
+    def render_tab_services(self, app_elem, combo_box):
         current_service = self.dict_elem[app_elem][7]
         app_master_id = app_elem.comboBox.currentIndex()
 
@@ -219,9 +223,32 @@ class MyWidget(QMainWindow):
             if service[0] in services:
                 service_array.append(service[1])
 
-        app_elem.comboBox_2.clear()
-        app_elem.comboBox_2.addItems(service_array)
-        app_elem.comboBox_2.setCurrentText(current_service)
+        combo_box.clear()
+        combo_box.addItems(service_array)
+        combo_box.setCurrentText(current_service)
+
+    def render_combo_box(self, master_box, service_box):
+        app_master_id = master_box.currentIndex()
+        print(app_master_id)
+
+        # redo masters_db, masters id shouldn't be equal to index
+        master = cur.execute("SELECT * FROM master_db WHERE master_id = ?;",
+                             str(app_master_id, )).fetchall()[0]
+        services_db = cur.execute("SELECT * FROM services_db;").fetchall()
+
+        service_array = []
+        services = ''
+
+        for i in master[3]:
+            if i not in services:
+                services += i
+
+        for service in services_db:
+            if service[0] in services:
+                service_array.append(service[1])
+
+        service_box.clear()
+        service_box.addItems(service_array)
 
     def show_app(self):
         self.frame_2.hide()
@@ -232,32 +259,28 @@ class MyWidget(QMainWindow):
 
         appointments_db = cur.execute("SELECT * FROM appointments_db;").fetchall()
 
-        services_db = cur.execute("SELECT * FROM services_db;").fetchall()
-
         masters_db = cur.execute("SELECT * FROM master_db;").fetchall()
 
-        combo_elements = {}
+        services_id = ''
+        masters_name = {}
 
         for master in masters_db:
-            combo_elements[str(master[1] + ' ' + master[2])] = master[0]
-
-        service_array = []
-        something = ''
-
-        for master in masters_db:
-            something += str(master[3])
-
-        for service in services_db:
-            if service[0] in something:
-                service_array.append(service[1])
-
-        self.comboBox.clear()
-        self.comboBox.addItems(combo_elements)
-        self.comboBox.setCurrentText('')
+            masters_name[str(master[1] + ' ' + master[2])] = master[0]
+            for i in master[3]:
+                if i not in services_id:
+                    services_id += i
 
         self.comboBox_2.clear()
-        self.comboBox_2.addItems(service_array)
-        self.comboBox_2.setCurrentText('')
+        self.comboBox_2.addItems(masters_name)
+
+        self.comboBox_2.currentTextChanged.connect(
+            lambda state, master_box=self.comboBox_2, service_box=self.comboBox: self.render_combo_box(
+                master_box, service_box))
+
+        self.comboBox_2.setCurrentIndex(0)
+        self.comboBox.setCurrentIndex(0)
+
+        self.render_combo_box(self.comboBox_2, self.comboBox)
 
         try:
             ids = int(appointments_db[-1][0]) + 1
@@ -292,7 +315,8 @@ class MyWidget(QMainWindow):
             if res:
                 ap_id = self.tableWidget.currentItem().text()
                 print(
-                    str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) appoint id is: ' + str(ap_id))
+                    str(datetime.datetime.now().strftime('%H:%M:%S')) + ' ' + 'Selected (DEL) appoint id is: ' + str(
+                        ap_id))
 
                 cur.execute("DELETE FROM appointments_db WHERE appointment_id = ?", (str(ap_id),))
                 conn.commit()
@@ -313,29 +337,29 @@ class MyWidget(QMainWindow):
             ap_id = self.tableWidget.currentItem().text()
 
             appointment_elem = \
-            cur.execute("SELECT * FROM appointments_db WHERE appointment_id = ?", (str(ap_id),)).fetchall()[0]
-            services_db = cur.execute("SELECT * FROM services_db;").fetchall()
-            masters = cur.execute("SELECT * FROM master_db;").fetchall()
+                cur.execute("SELECT * FROM appointments_db WHERE appointment_id = ?", (str(ap_id),)).fetchall()[0]
+            masters_db = cur.execute("SELECT * FROM master_db;").fetchall()
 
-            service_array = []
-            something = ''
-            combo_elements = {}
+            services_id = ''
+            masters_name = {}
 
-            for master in masters:
-                combo_elements[str(master[1] + ' ' + master[2])] = master[0]
+            for master in masters_db:
+                masters_name[str(master[1] + ' ' + master[2])] = master[0]
                 for i in master[3]:
-                    if i not in something:
-                        something += i
+                    if i not in services_id:
+                        services_id += i
 
-            for service in services_db:
-                if service[0] in something:
-                    service_array.append(service[1])
+            self.comboBox_4.currentTextChanged.connect(
+                lambda state: self.render_combo_box(
+                    self.comboBox_4, self.comboBox_3))
 
-            self.comboBox_3.addItems(service_array)
-            self.comboBox_3.setCurrentText('')
+            self.comboBox_4.clear()
+            self.comboBox_4.addItems(masters_name)
 
-            self.comboBox_4.addItems(combo_elements)
-            self.comboBox_4.setCurrentText('')
+            self.comboBox_3.setCurrentIndex(0)
+            self.comboBox_4.setCurrentIndex(0)
+
+            self.render_combo_box(self.comboBox_4, self.comboBox_3)
 
             self.comboBox_6.setCurrentIndex(int(appointment_elem[1]))
 
@@ -578,7 +602,11 @@ class MyWidget(QMainWindow):
                     app_elem.pushButton_3.clicked.connect(lambda state, x=app_elem: self.archive_tab_app(x))
                     app_elem.pushButton_4.clicked.connect(lambda state, x=app_elem: self.update_tab_app(x))
 
-                    app_elem.setGeometry(QRect(0, 0, 365, 51))
+                    # If absolute
+                    # app_vertical_pos = len(self.dict_elem) * 51 + len(self.dict_elem) * 20 + 10
+
+                    app_elem.setGeometry(QRect(10, 10, 365, 51))
+
                     app_elem.comboBox_2.currentTextChanged.connect(
                         lambda state: app_elem.label_6.setText(app_elem.comboBox_2.currentText()))
 
@@ -591,6 +619,10 @@ class MyWidget(QMainWindow):
                             if i not in services_id:
                                 services_id += i
 
+                    app_elem.comboBox.currentTextChanged.connect(
+                        lambda state, tab_elem=app_elem, combo_box=app_elem.comboBox_2: self.render_tab_services(
+                            tab_elem, combo_box))
+
                     app_elem.comboBox.clear()
 
                     app_elem.comboBox.addItems(masters_name)
@@ -598,9 +630,7 @@ class MyWidget(QMainWindow):
                     app_elem.comboBox.setCurrentText(app_2[6])
                     app_elem.comboBox_2.setCurrentText(app_2[7])
 
-                    app_elem.comboBox.currentTextChanged.connect(
-                        lambda state, tb_elem=app_elem: self.render_tab_services(tb_elem))
-                    self.render_tab_services(app_elem)
+                    self.render_tab_services(app_elem, app_elem.comboBox_2)
 
                     app_elem.lineEdit.setText(app_2[2])
                     app_elem.lineEdit_2.setText(app_2[3])
@@ -615,7 +645,7 @@ class MyWidget(QMainWindow):
                     app_elem.timeEdit.setTime(datetime.datetime.strptime(app_2[4], '%H:%M:%S').time())
 
                     self.tab_layout.addWidget(app_elem, current_tab_row, 0)
-                    # self.tab_layout.setRowStretch(current_tab_row, 1)
+                    # self.tab_layout.setRowStretch(current_tab_row, 2)
                     # self.tab_layout.setRowStretch(current_tab_row+1, 10-len(self.dict_elem))
 
                     current_tab_row += 1

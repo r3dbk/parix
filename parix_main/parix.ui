@@ -107,35 +107,6 @@ background-color: rgb(247, 248, 255);</string>
         <attribute name="title">
          <string>Latest appointments</string>
         </attribute>
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>405</width>
-           <height>543</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background:none;background-color:#b9baca;</string>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>403</width>
-            <height>541</height>
-           </rect>
-          </property>
-         </widget>
-        </widget>
        </widget>
       </widget>
      </widget>
